@@ -11,14 +11,44 @@ relevance_threshold: 0.55     # Threshold for A1 irrelevant information detectio
 divergence_threshold: 0.25    # Threshold for A3 few-shot bias detection (0.0-1.0)
 fact_check_threshold: 0.7     # Threshold for A2 fact-checking confidence (0.0-1.0)
 
-# Dangerous Tools Detection (A5)
-dangerous_tools:
-  - "delete_file"
-  - "transfer_funds"
-  - "system_shutdown"
-  - "exec_command"
-  - "modify_system_settings"
-  - "access_credentials"
+# A2: Misinformation Detection Keywords (in addition to built-in patterns)
+misinformation_keywords:
+  - "conspiracy"
+  - "hoax"
+  - "debunked"
+  - "cover-up"
+
+# A4: Base Model Usage Detection Keywords (in addition to built-in patterns)
+instruction_keywords:
+  - "jailbreak"
+  - "bypass"
+  - "ignore"
+  - "override"
+
+bypass_patterns:
+  - "DAN"
+  - "developer mode"
+  - "god mode"
+  - "admin mode"
+
+# A5: Dangerous Tools Detection Keywords (in addition to built-in patterns)
+dangerous_keywords:
+  - "weapon"
+  - "explosive"
+  - "hack"
+  - "malware"
+
+weapon_keywords:
+  - "bomb"
+  - "grenade"
+  - "firearm"
+  - "poison"
+
+cyber_keywords:
+  - "exploit"
+  - "ddos"
+  - "trojan"
+  - "ransomware"
 
 # File Processing
 skip_patterns:                # Glob patterns to skip during analysis
@@ -28,6 +58,11 @@ skip_patterns:                # Glob patterns to skip during analysis
   - "**/.DS_Store"
   - "**/vendor/**"
   - "**/*.log"
+
+# Output Options
+log_level: info               # Logging level: debug, info, warn, error
+color_output: true            # Enable colored output in terminal
+max_findings_per_file: 50     # Maximum findings to report per file
 
 # Output Configuration
 output_format: table          # Default output format: 'table', 'json', 'detailed'

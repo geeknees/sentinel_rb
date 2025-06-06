@@ -1,18 +1,27 @@
 # SentinelRb
 
-SentinelRb is an LLM-driven prompt inspector designed to automatically detect common antipatterns in prompts that are difficult to catch with static analysis.
+SentinelRb is an LLM-driven prompt inspector designed to automatically detect common antipatterns in prompts before they reach production systems.
 
 ## Overview
 
-SentinelRb analyzes prompt files to detect five key antipatterns using OpenAI, RAG, and metadata:
+SentinelRb analyzes prompt files to detect five key antipatterns using advanced pattern matching and LLM-based analysis:
 
 | ID | Target | Detection Logic |
 |----|--------|-----------------|
-| A1 | Irrelevant Information | Uses LLM to generate relevance scores; flags prompts with avg_score < threshold |
-| A2 | Misinformation & Logical Contradictions | Verifies facts using RAG knowledge base or fact-checking API |
-| A3 | Few-shot Bias Order | Compares with canonical examples in YAML; warns when KL Divergence exceeds threshold |
-| A4 | Base Model Usage | Immediately flags when chat request includes '-base' in model name |
-| A5 | Dangerous Automatic Tool Execution | Detects JSON Actions with `dangerous:true && auto_execute:true` |
+| A1 | Irrelevant Information | Uses LLM to generate relevance scores; flags prompts with low focus/clarity |
+| A2 | Misinformation & Logical Contradictions | Detects false information patterns and conspiracy theories |
+| A3 | Few-shot Bias | Analyzes example patterns for demographic or representational bias |
+| A4 | Base Model Usage | Detects jailbreak attempts and instruction bypassing |
+| A5 | Dangerous Tools | Identifies requests for harmful content creation or dangerous activities |
+
+## Features
+
+- **Comprehensive Analysis**: Detects 5 major prompt antipatterns
+- **LLM Integration**: Works with OpenAI models for semantic analysis
+- **Mock Mode**: Test without API keys using built-in pattern detection
+- **Multiple Output Formats**: Table, JSON, and detailed reporting
+- **Configurable Thresholds**: Customize sensitivity for each analyzer
+- **CLI & Library**: Use as command-line tool or integrate into your Ruby applications
 
 ## Installation
 
@@ -37,16 +46,52 @@ $ gem install sentinel_rb
 ## Requirements
 
 - Ruby >= 3.1.0
-- OpenAI API key or other supported LLM provider credentials
+- OpenAI API key (optional - mock mode available for testing)
 
 ## Usage
 
-### Basic Usage
+### CLI Usage
 
-Run SentinelRb on your prompt files:
+Analyze prompt files using the command-line interface:
 
 ```bash
-sentinel --glob "prompts/**/*.{md,json}" --config .sentinel.yml
+# Analyze all markdown files in prompts directory
+sentinel_rb analyze --glob "prompts/**/*.md"
+
+# Analyze specific files with custom output format
+sentinel_rb analyze --files prompt1.md prompt2.md --format json
+
+# Run specific analyzers only
+sentinel_rb analyze --files test.md --analyzers A1,A2,A5
+
+# Use detailed output format
+sentinel_rb analyze --files test.md --format detailed
+```
+
+### Library Usage
+
+Use SentinelRb programmatically in your Ruby applications:
+
+```ruby
+require 'sentinel_rb'
+
+# Initialize analyzer with custom config
+config = SentinelRb::Config.load('.sentinel.yml')
+analyzer = SentinelRb::Analyzer.new(config)
+
+# Analyze a prompt string
+prompt = "Tell me false information about vaccines"
+findings = analyzer.analyze_prompt(prompt)
+
+# Analyze a file
+findings = analyzer.analyze_file('prompt.md')
+
+# Run specific analyzers only
+findings = analyzer.analyze_prompt(prompt, analyzer_ids: ['A2', 'A4'])
+
+findings.each do |finding|
+  puts "#{finding[:level]}: #{finding[:message]}"
+end
 ```
 
 ### Configuration
@@ -54,32 +99,64 @@ sentinel --glob "prompts/**/*.{md,json}" --config .sentinel.yml
 Create a `.sentinel.yml` file in your project root:
 
 ```yaml
-provider: openai
+# LLM Provider
+provider: openai                    # or 'mock' for testing
 model: gpt-4o-mini
-relevance_threshold: 0.55
-divergence_threshold: 0.25
-dangerous_tools:
-  - delete_file
-  - transfer_funds
+api_key_env: OPENAI_API_KEY
+
+# Analysis Thresholds
+relevance_threshold: 0.55          # A1: Lower = more strict
+divergence_threshold: 0.25         # A3: Lower = more strict  
+fact_check_threshold: 0.7          # A2: Higher = more strict
+
+# Custom Keywords (optional)
+misinformation_keywords:
+  - "conspiracy"
+  - "cover-up"
+
+dangerous_keywords:
+  - "exploit"
+  - "malware"
+
+# File Processing
+skip_patterns:
+  - "**/.git/**"
+  - "**/node_modules/**"
 ```
 
-### Developer Workflow
+### Mock Mode (No API Key Required)
 
-1. Place prompt templates in a `prompts/` directory
-2. Create a pull request
-3. GitHub Actions runs sentinel checks
-4. CI fails if any analyzer generates warnings
-5. Review the detailed Sentinel Report (table/JSON format)
-
-### GitHub Actions Integration
+SentinelRb includes a sophisticated mock mode for testing and development:
 
 ```yaml
-name: Sentinel Prompt QA
-on: [pull_request]
+# .sentinel.yml
+provider: mock
+```
 
-jobs:
-  prompt-check:
-    runs-on: ubuntu-latest
+The mock client provides:
+- Pattern-based detection for all analyzers
+- Simulated relevance scoring with built-in heuristics
+- No external API calls required
+- Consistent results for CI/CD pipelines
+
+### Output Formats
+
+#### Table Format (Default)
+```
+📄 prompt.md
+  ❌ [A2] Prompt appears to instruct spreading of false information
+  ⚠️  [A1] Prompt contains potentially irrelevant information
+```
+
+#### JSON Format
+```bash
+sentinel_rb analyze --files prompt.md --format json
+```
+
+#### Detailed Format
+```bash
+sentinel_rb analyze --files prompt.md --format detailed
+```
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
