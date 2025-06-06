@@ -19,7 +19,7 @@ module SentinelRb
 
     def self.load(config_path = ".sentinel.yml")
       config = DEFAULT_CONFIG.dup
-      
+
       if File.exist?(config_path)
         begin
           user_config = YAML.load_file(config_path)
@@ -29,7 +29,7 @@ module SentinelRb
           warn "Using default configuration."
         end
       end
-      
+
       new(config)
     end
 

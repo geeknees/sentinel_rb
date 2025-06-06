@@ -36,7 +36,9 @@ module SentinelRb
         rescue StandardError => e
           # If LLM analysis fails, we'll rely on heuristic checks only
           # Log the error but don't fail the entire analysis
-          warn "Warning: LLM analysis failed for irrelevant info detection: #{e.message}" if @config["log_level"] == "debug"
+          if @config["log_level"] == "debug"
+            warn "Warning: LLM analysis failed for irrelevant info detection: #{e.message}"
+          end
         end
 
         # Additional heuristic checks (these work even if LLM fails)
@@ -59,7 +61,7 @@ module SentinelRb
         # Calculate variance in sentence lengths
         lengths = sentences.map(&:length)
         avg_length = lengths.sum.to_f / lengths.length
-        variance = lengths.map { |len| (len - avg_length) ** 2 }.sum / lengths.length
+        variance = lengths.map { |len| (len - avg_length)**2 }.sum / lengths.length
         std_dev = Math.sqrt(variance)
 
         # Flag if there's high variance (suggesting mix of very long and short sentences)
@@ -84,7 +86,7 @@ module SentinelRb
       # Check for repetitive content that might be noise
       def check_repetitive_content
         words = @prompt.downcase.scan(/\w+/)
-        return [] if words.length < 5  # Reduced threshold for shorter test prompts
+        return [] if words.length < 5 # Reduced threshold for shorter test prompts
 
         # Count word frequencies
         word_counts = Hash.new(0)
@@ -92,9 +94,9 @@ module SentinelRb
 
         # Find words that appear unusually often
         avg_frequency = words.length.to_f / word_counts.keys.length
-        repetitive_words = word_counts.select { |word, count| 
-          count > avg_frequency * 2 && word.length > 2  # More lenient thresholds
-        }
+        repetitive_words = word_counts.select do |word, count|
+          count > avg_frequency * 2 && word.length > 2 # More lenient thresholds
+        end
 
         if repetitive_words.any?
           [create_finding(
@@ -114,7 +116,7 @@ module SentinelRb
       # Check for common markers of off-topic content
       def check_off_topic_markers
         findings = []
-        
+
         # Common patterns that might indicate irrelevant content
         noise_patterns = [
           /\b(disclaimer|legal notice|copyright|terms of service)\b/i,
@@ -124,17 +126,17 @@ module SentinelRb
         ]
 
         noise_patterns.each_with_index do |pattern, index|
-          if @prompt.match?(pattern)
-            findings << create_finding(
-              id: ANALYZER_ID,
-              level: :info,
-              message: "Prompt contains potential noise markers (pattern #{index + 1})",
-              details: {
-                pattern_matched: pattern.source,
-                matches: @prompt.scan(pattern).flatten.uniq.take(3)
-              }
-            )
-          end
+          next unless @prompt.match?(pattern)
+
+          findings << create_finding(
+            id: ANALYZER_ID,
+            level: :info,
+            message: "Prompt contains potential noise markers (pattern #{index + 1})",
+            details: {
+              pattern_matched: pattern.source,
+              matches: @prompt.scan(pattern).flatten.uniq.take(3)
+            }
+          )
         end
 
         findings
