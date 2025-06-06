@@ -21,8 +21,13 @@ module SentinelRb
       config = DEFAULT_CONFIG.dup
       
       if File.exist?(config_path)
-        user_config = YAML.load_file(config_path)
-        config.merge!(user_config) if user_config.is_a?(Hash)
+        begin
+          user_config = YAML.load_file(config_path)
+          config.merge!(user_config) if user_config.is_a?(Hash)
+        rescue Psych::SyntaxError => e
+          warn "Warning: Invalid YAML in config file #{config_path}: #{e.message}"
+          warn "Using default configuration."
+        end
       end
       
       new(config)
