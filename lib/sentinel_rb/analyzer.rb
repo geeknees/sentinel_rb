@@ -35,18 +35,16 @@ module SentinelRb
       findings = []
 
       analyzers_to_run.each do |analyzer_class|
-        begin
-          analyzer = analyzer_class.new(prompt, @config, @client)
-          findings.concat(analyzer.call)
-        rescue StandardError => e
-          # Log error but continue with other analyzers
-          findings << {
-            id: "ERROR",
-            level: :error,
-            message: "Analyzer #{analyzer_class.name} failed: #{e.message}",
-            details: { error_class: e.class.name, backtrace: e.backtrace.first(3) }
-          }
-        end
+        analyzer = analyzer_class.new(prompt, @config, @client)
+        findings.concat(analyzer.call)
+      rescue StandardError => e
+        # Log error but continue with other analyzers
+        findings << {
+          id: "ERROR",
+          level: :error,
+          message: "Analyzer #{analyzer_class.name} failed: #{e.message}",
+          details: { error_class: e.class.name, backtrace: e.backtrace.first(3) }
+        }
       end
 
       findings
@@ -67,7 +65,7 @@ module SentinelRb
 
       begin
         content = File.read(file_path, encoding: "UTF-8")
-        puts "Debug: File size: #{content.length}, Content preview: #{content[0..100].inspect}" if ENV['DEBUG']
+        puts "Debug: File size: #{content.length}, Content preview: #{content[0..100].inspect}" if ENV["DEBUG"]
         findings = analyze_prompt(content, analyzer_ids: analyzer_ids)
 
         {
@@ -91,7 +89,7 @@ module SentinelRb
     # @return [Array<Hash>] Array of file analysis results
     def analyze_files(pattern, analyzer_ids: nil)
       files = Dir.glob(pattern).reject { |f| should_skip_file?(f) }
-      
+
       files.map do |file|
         analyze_file(file, analyzer_ids: analyzer_ids)
       end
@@ -106,16 +104,16 @@ module SentinelRb
       total_findings = results.sum { |r| r[:findings]&.length || 0 }
 
       findings_by_level = results
-        .flat_map { |r| r[:findings] || [] }
-        .group_by { |f| f[:level] }
-        .transform_values(&:count)
+                          .flat_map { |r| r[:findings] || [] }
+                          .group_by { |f| f[:level] }
+                          .transform_values(&:count)
 
       {
         total_files: total_files,
         files_with_issues: files_with_issues,
         total_findings: total_findings,
         findings_by_level: findings_by_level,
-        pass_rate: total_files > 0 ? ((total_files - files_with_issues).to_f / total_files * 100).round(1) : 100.0
+        pass_rate: total_files.positive? ? ((total_files - files_with_issues).to_f / total_files * 100).round(1) : 100.0
       }
     end
 
@@ -133,7 +131,7 @@ module SentinelRb
 
     def should_skip_file?(file_path)
       skip_patterns = @config["skip_patterns"] || []
-      
+
       skip_patterns.any? do |pattern|
         File.fnmatch(pattern, file_path, File::FNM_PATHNAME | File::FNM_DOTMATCH)
       end

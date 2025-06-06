@@ -53,9 +53,9 @@ module SentinelRb
 
     # Table formatter for terminal output
     class TableFormatter < BaseFormatter
-      def format(results, show_summary: true, colorize: true, **options)
+      def format(results, show_summary: true, colorize: true, **_options)
         output = []
-        
+
         if show_summary
           summary = SentinelRb::Analyzer.new.summarize_results(results)
           output << format_summary(summary, colorize)
@@ -64,13 +64,13 @@ module SentinelRb
 
         results.each do |result|
           next if result[:findings].nil? || result[:findings].empty?
-          
+
           output << format_file_header(result[:file], colorize)
-          
+
           result[:findings].each do |finding|
             output << format_finding(finding, colorize)
           end
-          
+
           output << ""
         end
 
@@ -87,7 +87,7 @@ module SentinelRb
         lines << "Files with issues: #{summary[:files_with_issues]}"
         lines << "Total findings: #{summary[:total_findings]}"
         lines << "Pass rate: #{summary[:pass_rate]}%"
-        
+
         if summary[:findings_by_level].any?
           lines << ""
           lines << "Findings by level:"
@@ -98,7 +98,7 @@ module SentinelRb
             lines << "  #{color}#{symbol} #{level.to_s.capitalize}: #{count}#{reset}"
           end
         end
-        
+
         lines.join("\n")
       end
 
@@ -114,22 +114,22 @@ module SentinelRb
         symbol = level_symbol(finding[:level])
         color = colorize ? level_color_code(finding[:level]) : ""
         reset = colorize ? reset_color : ""
-        
+
         "  #{color}#{symbol} [#{finding[:id]}] #{finding[:message]}#{reset}"
       end
     end
 
     # JSON formatter for programmatic consumption
     class JsonFormatter < BaseFormatter
-      def format(results, pretty: true, **options)
+      def format(results, pretty: true, **_options)
         require "json"
-        
+
         output = {
           timestamp: Time.now.iso8601,
           summary: SentinelRb::Analyzer.new.summarize_results(results),
           results: results
         }
-        
+
         if pretty
           JSON.pretty_generate(output)
         else
@@ -140,9 +140,9 @@ module SentinelRb
 
     # Detailed formatter with full finding information
     class DetailedFormatter < BaseFormatter
-      def format(results, **options)
+      def format(results, **_options)
         output = []
-        
+
         summary = SentinelRb::Analyzer.new.summarize_results(results)
         output << format_detailed_summary(summary)
         output << ""
@@ -167,7 +167,7 @@ module SentinelRb
         lines << "  Total findings: #{summary[:total_findings]}"
         lines << "  Overall pass rate: #{summary[:pass_rate]}%"
         lines << ""
-        
+
         if summary[:findings_by_level].any?
           lines << "Findings breakdown:"
           summary[:findings_by_level].each do |level, count|
@@ -183,7 +183,7 @@ module SentinelRb
         lines = []
         lines << "-" * 60
         lines << "File: #{result[:file]}"
-        
+
         if result[:error]
           lines << "Error: #{result[:error]}"
           lines << ""
@@ -199,20 +199,20 @@ module SentinelRb
         else
           lines << "Issues found: #{result[:findings].length}"
           lines << ""
-          
+
           result[:findings].each_with_index do |finding, index|
             lines << "Finding #{index + 1}:"
             lines << "  ID: #{finding[:id]}"
             lines << "  Level: #{finding[:level]}"
             lines << "  Message: #{finding[:message]}"
-            
-            if finding[:details] && finding[:details].any?
+
+            if finding[:details]&.any?
               lines << "  Details:"
               finding[:details].each do |key, value|
                 lines << "    #{key}: #{value}"
               end
             end
-            
+
             lines << ""
           end
         end

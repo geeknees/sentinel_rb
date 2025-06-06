@@ -13,7 +13,7 @@ module SentinelRb
   # Main entry point for programmatic usage
   def self.analyze(prompt_or_file, config: nil, **options)
     analyzer = Analyzer.new(config)
-    
+
     if File.exist?(prompt_or_file.to_s)
       analyzer.analyze_file(prompt_or_file, **options)
     else

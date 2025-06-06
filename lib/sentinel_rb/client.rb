@@ -10,7 +10,7 @@ module SentinelRb
     class Factory
       def self.create(config)
         provider = config.provider
-        
+
         case provider
         when "openai"
           OpenAI.new(config)

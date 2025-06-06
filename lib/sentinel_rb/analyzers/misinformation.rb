@@ -60,17 +60,17 @@ module SentinelRb
 
         instruction_patterns.each do |pattern_info|
           matches = prompt.scan(pattern_info[:pattern])
-          if matches.any?
-            findings << create_finding(
-              id: "A2",
-              level: pattern_info[:level],
-              message: pattern_info[:message],
-              details: {
-                pattern_matched: pattern_info[:pattern].source,
-                matches: matches.flatten.uniq
-              }
-            )
-          end
+          next unless matches.any?
+
+          findings << create_finding(
+            id: "A2",
+            level: pattern_info[:level],
+            message: pattern_info[:message],
+            details: {
+              pattern_matched: pattern_info[:pattern].source,
+              matches: matches.flatten.uniq
+            }
+          )
         end
 
         findings
@@ -97,7 +97,7 @@ module SentinelRb
           end
         end
 
-        if conspiracy_count > 0
+        if conspiracy_count.positive?
           findings << create_finding(
             id: "A2",
             level: conspiracy_count >= 3 ? :error : :warn,
@@ -140,22 +140,22 @@ module SentinelRb
 
         medical_misinformation_patterns.each do |pattern_info|
           matches = prompt.scan(pattern_info[:pattern])
-          if matches.any?
-            findings << create_finding(
-              id: "A2",
-              level: pattern_info[:level],
-              message: pattern_info[:message],
-              details: {
-                pattern_matched: pattern_info[:pattern].source,
-                matches: matches.flatten.uniq,
-                suggestions: [
-                  "Remove medical misinformation claims",
-                  "Consult qualified medical professionals",
-                  "Use evidence-based medical information"
-                ]
-              }
-            )
-          end
+          next unless matches.any?
+
+          findings << create_finding(
+            id: "A2",
+            level: pattern_info[:level],
+            message: pattern_info[:message],
+            details: {
+              pattern_matched: pattern_info[:pattern].source,
+              matches: matches.flatten.uniq,
+              suggestions: [
+                "Remove medical misinformation claims",
+                "Consult qualified medical professionals",
+                "Use evidence-based medical information"
+              ]
+            }
+          )
         end
 
         findings
@@ -179,32 +179,30 @@ module SentinelRb
           claims_found.concat(matches) if matches.any?
         end
 
-        if claims_found.any? && claims_found.length <= 3  # Don't fact-check too many claims
+        if claims_found.any? && claims_found.length <= 3 # Don't fact-check too many claims
           claims_found.each do |claim|
-            begin
-              fact_check_result = @client.fact_check(claim.strip)
+            fact_check_result = @client.fact_check(claim.strip)
 
-              if fact_check_result[:confidence] < @fact_check_threshold
-                findings << create_finding(
-                  id: "A2",
-                  level: :info,
-                  message: "Factual claim could not be verified with high confidence",
-                  details: {
-                    claim: claim.strip,
-                    confidence: fact_check_result[:confidence],
-                    reason: fact_check_result[:reason],
-                    suggestions: [
-                      "Verify the claim with reliable sources",
-                      "Consider adding source citations",
-                      "Use more cautious language for unverified claims"
-                    ]
-                  }
-                )
-              end
-            rescue StandardError => e
-              # Fact-checking failed, but don't break the analysis
-              puts "Debug: Fact-checking failed for claim: #{e.message}" if ENV['DEBUG']
+            if fact_check_result[:confidence] < @fact_check_threshold
+              findings << create_finding(
+                id: "A2",
+                level: :info,
+                message: "Factual claim could not be verified with high confidence",
+                details: {
+                  claim: claim.strip,
+                  confidence: fact_check_result[:confidence],
+                  reason: fact_check_result[:reason],
+                  suggestions: [
+                    "Verify the claim with reliable sources",
+                    "Consider adding source citations",
+                    "Use more cautious language for unverified claims"
+                  ]
+                }
+              )
             end
+          rescue StandardError => e
+            # Fact-checking failed, but don't break the analysis
+            puts "Debug: Fact-checking failed for claim: #{e.message}" if ENV["DEBUG"]
           end
         end
 

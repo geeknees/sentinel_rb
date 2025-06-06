@@ -60,17 +60,17 @@ module SentinelRb
         ]
 
         instruction_patterns.each do |pattern_info|
-          if prompt.match?(pattern_info[:pattern])
-            findings << create_finding(
-              id: "A4",
-              level: pattern_info[:level],
-              message: pattern_info[:message],
-              details: {
-                pattern_matched: pattern_info[:pattern].source,
-                suggestion: "Remove attempts to bypass model guidelines and use appropriate prompting techniques"
-              }
-            )
-          end
+          next unless prompt.match?(pattern_info[:pattern])
+
+          findings << create_finding(
+            id: "A4",
+            level: pattern_info[:level],
+            message: pattern_info[:message],
+            details: {
+              pattern_matched: pattern_info[:pattern].source,
+              suggestion: "Remove attempts to bypass model guidelines and use appropriate prompting techniques"
+            }
+          )
         end
 
         findings
@@ -98,17 +98,17 @@ module SentinelRb
         ]
 
         bypass_patterns.each do |pattern_info|
-          if prompt.match?(pattern_info[:pattern])
-            findings << create_finding(
-              id: "A4",
-              level: pattern_info[:level],
-              message: pattern_info[:message],
-              details: {
-                pattern_matched: pattern_info[:pattern].source,
-                suggestion: "Use direct, honest prompting instead of attempting to circumvent safety measures"
-              }
-            )
-          end
+          next unless prompt.match?(pattern_info[:pattern])
+
+          findings << create_finding(
+            id: "A4",
+            level: pattern_info[:level],
+            message: pattern_info[:message],
+            details: {
+              pattern_matched: pattern_info[:pattern].source,
+              suggestion: "Use direct, honest prompting instead of attempting to circumvent safety measures"
+            }
+          )
         end
 
         findings
@@ -126,17 +126,17 @@ module SentinelRb
 
         if prompt.match?(/\b(roleplay|act as|pretend to be|you are)\b/i)
           problematic_roles.each do |role_pattern|
-            if prompt.match?(role_pattern)
-              findings << create_finding(
-                id: "A4",
-                level: :warn,
-                message: "Prompt involves roleplay as potentially harmful persona",
-                details: {
-                  role_pattern: role_pattern.source,
-                  suggestion: "Consider using more appropriate roleplay scenarios that don't involve harmful personas"
-                }
-              )
-            end
+            next unless prompt.match?(role_pattern)
+
+            findings << create_finding(
+              id: "A4",
+              level: :warn,
+              message: "Prompt involves roleplay as potentially harmful persona",
+              details: {
+                role_pattern: role_pattern.source,
+                suggestion: "Consider using more appropriate roleplay scenarios that don't involve harmful personas"
+              }
+            )
           end
         end
 
@@ -153,17 +153,17 @@ module SentinelRb
         ]
 
         training_access_patterns.each do |pattern|
-          if prompt.match?(pattern)
-            findings << create_finding(
-              id: "A4",
-              level: :info,
-              message: "Prompt may be attempting to access specific training data",
-              details: {
-                pattern_matched: pattern.source,
-                suggestion: "Focus on asking for general information rather than specific training examples"
-              }
-            )
-          end
+          next unless prompt.match?(pattern)
+
+          findings << create_finding(
+            id: "A4",
+            level: :info,
+            message: "Prompt may be attempting to access specific training data",
+            details: {
+              pattern_matched: pattern.source,
+              suggestion: "Focus on asking for general information rather than specific training examples"
+            }
+          )
         end
 
         findings

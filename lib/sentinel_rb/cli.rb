@@ -25,9 +25,7 @@ module SentinelRb
 
       # Determine files to analyze
       files_to_analyze = determine_files(options)
-      if files_to_analyze.empty?
-        error_exit("No files found to analyze. Use --glob or --files to specify files.")
-      end
+      error_exit("No files found to analyze. Use --glob or --files to specify files.") if files_to_analyze.empty?
 
       say("Analyzing #{files_to_analyze.length} files...") unless options[:quiet]
 
@@ -49,7 +47,7 @@ module SentinelRb
 
       # Exit with appropriate code
       summary = analyzer.summarize_results(results)
-      exit_code = summary[:total_findings] > 0 ? 1 : 0
+      exit_code = summary[:total_findings].positive? ? 1 : 0
       exit(exit_code)
     rescue StandardError => e
       error_exit("Analysis failed: #{e.message}")
@@ -66,7 +64,7 @@ module SentinelRb
       config = load_config(options[:config])
       say("Configuration loaded from: #{options[:config]}")
       say("")
-      
+
       config.to_h.each do |key, value|
         say("#{key}: #{value}")
       end
@@ -77,13 +75,13 @@ module SentinelRb
     def test_connection
       config = load_config(options[:config])
       client = SentinelRb::Client::Factory.create(config)
-      
+
       say("Testing connection to #{config.provider}...")
-      
+
       begin
         # Test with a simple analysis
         result = client.analyze_content("This is a test prompt for connection verification.")
-        
+
         if result[:relevance_score]
           say("✅ Connection successful!")
           say("Test analysis score: #{result[:relevance_score].round(3)}")
@@ -99,10 +97,10 @@ module SentinelRb
       private
 
       def load_config(config_path)
-        unless File.exist?(config_path)
-          say("Configuration file #{config_path} not found, using defaults.", :yellow) unless options[:quiet]
+        if !File.exist?(config_path) && !options[:quiet]
+          say("Configuration file #{config_path} not found, using defaults.", :yellow)
         end
-        
+
         SentinelRb::Config.load(config_path)
       rescue StandardError => e
         error_exit("Failed to load configuration: #{e.message}")
@@ -110,14 +108,10 @@ module SentinelRb
 
       def determine_files(options)
         files = []
-        
-        if options[:files]
-          files.concat(options[:files])
-        end
-        
-        if options[:glob]
-          files.concat(Dir.glob(options[:glob]))
-        end
+
+        files.concat(options[:files]) if options[:files]
+
+        files.concat(Dir.glob(options[:glob])) if options[:glob]
 
         # Default glob if no files specified
         if files.empty?
@@ -126,7 +120,7 @@ module SentinelRb
             "**/*.prompt",
             "**/*.prompt.md"
           ]
-          
+
           default_patterns.each do |pattern|
             found_files = Dir.glob(pattern)
             if found_files.any?

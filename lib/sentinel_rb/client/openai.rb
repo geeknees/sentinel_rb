@@ -107,7 +107,7 @@ module SentinelRb
         magnitude1 = Math.sqrt(vec1.map { |x| x * x }.sum)
         magnitude2 = Math.sqrt(vec2.map { |x| x * x }.sum)
 
-        return 0.0 if magnitude1 == 0 || magnitude2 == 0
+        return 0.0 if magnitude1.zero? || magnitude2.zero?
 
         dot_product / (magnitude1 * magnitude2)
       end

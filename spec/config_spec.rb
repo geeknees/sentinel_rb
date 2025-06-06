@@ -23,7 +23,7 @@ RSpec.describe SentinelRb::Config do
 
       it "loads configuration from file" do
         config = described_class.load(temp_config_file)
-        
+
         expect(config.provider).to eq("openai")
         expect(config.model).to eq("gpt-3.5-turbo")
         expect(config.relevance_threshold).to eq(0.7)
@@ -32,7 +32,7 @@ RSpec.describe SentinelRb::Config do
 
       it "merges with default configuration" do
         config = described_class.load(temp_config_file)
-        
+
         # Should have custom values
         expect(config.model).to eq("gpt-3.5-turbo")
         # Should have defaults for unspecified values
@@ -43,7 +43,7 @@ RSpec.describe SentinelRb::Config do
     context "when config file does not exist" do
       it "uses default configuration" do
         config = described_class.load("nonexistent.yml")
-        
+
         expect(config.provider).to eq("openai")
         expect(config.model).to eq("gpt-4o-mini")
         expect(config.relevance_threshold).to eq(0.55)
@@ -57,7 +57,7 @@ RSpec.describe SentinelRb::Config do
 
       it "falls back to default configuration" do
         config = described_class.load(temp_config_file)
-        
+
         expect(config.provider).to eq("openai")
         expect(config.model).to eq("gpt-4o-mini")
       end
@@ -96,7 +96,7 @@ RSpec.describe SentinelRb::Config do
 
     it "returns a copy of the configuration hash" do
       result = config.to_h
-      
+
       expect(result).to eq(config_hash)
       expect(result).not_to be(config_hash) # Should be a copy
     end

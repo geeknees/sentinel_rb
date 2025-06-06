@@ -34,8 +34,8 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   # Dependencies for SentinelRb
-  spec.add_dependency "ruby-openai", "~> 7.0"
   spec.add_dependency "httparty", "~> 0.21"
+  spec.add_dependency "ruby-openai", "~> 7.0"
   spec.add_dependency "thor", "~> 1.0"
   spec.add_dependency "yaml", "~> 0.3"
 
