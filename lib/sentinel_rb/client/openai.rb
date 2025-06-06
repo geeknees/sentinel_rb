@@ -48,8 +48,8 @@ module SentinelRb
           }
         )
 
+        pp response if @config["log_level"] == "debug"
         score_text = response.dig("choices", 0, "message", "content").to_s.strip
-        pp score_text
         score = extract_score(score_text)
 
         {
