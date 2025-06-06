@@ -106,7 +106,7 @@ api_key_env: OPENAI_API_KEY
 
 # Analysis Thresholds
 relevance_threshold: 0.55          # A1: Lower = more strict
-divergence_threshold: 0.25         # A3: Lower = more strict  
+divergence_threshold: 0.25         # A3: Lower = more strict
 fact_check_threshold: 0.7          # A2: Higher = more strict
 
 # Custom Keywords (optional)
@@ -157,6 +157,7 @@ sentinel_rb analyze --files prompt.md --format json
 ```bash
 sentinel_rb analyze --files prompt.md --format detailed
 ```
+```yml
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
