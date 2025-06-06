@@ -1,0 +1,20 @@
+# Test configuration using mock provider
+provider: mock
+model: mock-model
+relevance_threshold: 0.55
+
+# Mock-specific settings
+mock_scores:
+  default: 0.7
+
+# Standard settings
+dangerous_tools:
+  - delete_file
+  - transfer_funds
+
+skip_patterns:
+  - "**/.git/**"
+  - "**/node_modules/**"
+
+output_format: table
+log_level: warn

@@ -1,0 +1,29 @@
+# SentinelRb Configuration File
+# For complete configuration options, see docs/usage.md
+
+# LLM Provider Configuration
+provider: openai
+model: gpt-4o-mini
+api_key_env: OPENAI_API_KEY
+
+# Analysis Thresholds
+relevance_threshold: 0.55     # Lower = more strict (0.0 - 1.0)
+divergence_threshold: 0.25    # For few-shot bias detection
+
+# Security Settings
+dangerous_tools:
+  - delete_file
+  - transfer_funds
+  - system_shutdown
+  - exec_command
+
+# File Processing
+skip_patterns:
+  - "**/.git/**"
+  - "**/node_modules/**"
+  - "**/tmp/**"
+  - "**/.DS_Store"
+
+# Output Settings
+output_format: table          # table, json, detailed
+log_level: warn              # debug, info, warn, error

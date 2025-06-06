@@ -1,0 +1,39 @@
+# SentinelRb Configuration Example
+# Copy this file to .sentinel.yml and customize as needed
+
+# LLM Provider Configuration
+provider: openai              # Provider: 'openai' or 'mock'
+model: gpt-4o-mini            # OpenAI model to use
+api_key_env: OPENAI_API_KEY   # Environment variable containing API key
+
+# Analysis Thresholds
+relevance_threshold: 0.55     # Threshold for A1 irrelevant information detection (0.0-1.0)
+divergence_threshold: 0.25    # Threshold for A3 few-shot bias detection (0.0-1.0)
+fact_check_threshold: 0.7     # Threshold for A2 fact-checking confidence (0.0-1.0)
+
+# Dangerous Tools Detection (A5)
+dangerous_tools:
+  - "delete_file"
+  - "transfer_funds"
+  - "system_shutdown"
+  - "exec_command"
+  - "modify_system_settings"
+  - "access_credentials"
+
+# File Processing
+skip_patterns:                # Glob patterns to skip during analysis
+  - "**/.git/**"
+  - "**/node_modules/**"
+  - "**/tmp/**"
+  - "**/.DS_Store"
+  - "**/vendor/**"
+  - "**/*.log"
+
+# Output Configuration
+output_format: table          # Default output format: 'table', 'json', 'detailed'
+log_level: warn              # Log level: 'debug', 'info', 'warn', 'error'
+
+# Mock Client Configuration (for testing without API keys)
+mock_scores:                  # Override scores for specific content patterns
+  # Example: Set specific score for test content
+  # "test prompt": 0.3
