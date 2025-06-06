@@ -1,5 +1,7 @@
 # SentinelRb
 
+[![Ruby](https://github.com/geeknees/sentinel_rb/actions/workflows/main.yml/badge.svg)](https://github.com/geeknees/sentinel_rb/actions/workflows/main.yml)
+
 SentinelRb is an LLM-driven prompt inspector designed to automatically detect common antipatterns in prompts before they reach production systems.
 
 ## Overview
