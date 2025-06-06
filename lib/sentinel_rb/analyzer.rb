@@ -5,6 +5,8 @@ require_relative "client"
 require_relative "analyzers/irrelevant_info"
 require_relative "analyzers/misinformation"
 require_relative "analyzers/few_shot_bias"
+require_relative "analyzers/base_model_usage"
+require_relative "analyzers/dangerous_tools"
 
 module SentinelRb
   # Main analyzer engine that coordinates prompt analysis
@@ -12,7 +14,9 @@ module SentinelRb
     ANALYZERS = {
       "A1" => Analyzers::IrrelevantInfo,
       "A2" => Analyzers::Misinformation,
-      "A3" => Analyzers::FewShotBias
+      "A3" => Analyzers::FewShotBias,
+      "A4" => Analyzers::BaseModelUsage,
+      "A5" => Analyzers::DangerousTools
     }.freeze
 
     def initialize(config = nil)
